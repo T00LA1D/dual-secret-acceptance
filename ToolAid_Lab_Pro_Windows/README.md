@@ -1,12 +1,34 @@
 # ToolAid Lab Pro Windows
 
-Full suite scaffold for Flipper device control, signal capture, automation, and experimentation.
+ToolAid Lab Pro is now a functional local tool lab with a runnable CLI, optional GUI, core signal workflows, plugins, and utility modules.
 
-## Run as a Linux app (simulation mode)
+## Features
+- Device command bridge with mockable device abstraction.
+- Capture + transmit + experiment loops.
+- Telemetry summaries and pattern scoring plugins.
+- Session logging utilities and JSON/file persistence helpers.
+- GUI tabs for dashboard, capture, transmit, automation, response checks, and log viewing.
+
+## Quick start (Linux/macOS)
 
 ```bash
+cd ToolAid_Lab_Pro_Windows
 python ToolAidLauncher.py --mode capture --duration 1
 python ToolAidLauncher.py --mode experiment --loops 2
+python ToolAidLauncher.py --mode telemetry --duration 1
+python ToolAidLauncher.py --mode console
 ```
 
-The launcher currently uses a local `MockFlipperDevice` so it can run without physical hardware.
+## Run desktop GUI
+
+```bash
+cd ToolAid_Lab_Pro_Windows
+python ToolAidLauncher.py --mode gui
+```
+
+## Tests
+
+```bash
+cd ToolAid_Lab_Pro_Windows
+python -m pytest -q
+```
