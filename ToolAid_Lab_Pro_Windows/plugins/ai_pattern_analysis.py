@@ -1,0 +1,1 @@
+# Plugin: ai_pattern_analysis.py
