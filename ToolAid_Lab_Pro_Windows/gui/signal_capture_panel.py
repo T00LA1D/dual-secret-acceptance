@@ -1,0 +1,1 @@
+# Panel for live signal capture
