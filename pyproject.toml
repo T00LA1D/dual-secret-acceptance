@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ipp-engine"
+version = "0.1.0"
+description = "A pluggable IPP engine with dual-secret acceptance"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+  { name = "Codex" }
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0"
+]
+
+[project.scripts]
+ipp-engine = "ipp_engine.__main__:main"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+addopts = "-q"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
