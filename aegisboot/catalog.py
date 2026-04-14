@@ -87,11 +87,14 @@ class BootCatalog:
         catalog["signature"] = sign_payload(payload)
         self.state_file.write_text(json.dumps(catalog, indent=2), encoding="utf-8")
 
-    def verify_catalog(self) -> bool:
-        catalog = self._read_catalog()
+    def _catalog_signature_valid(self, catalog: dict[str, Any]) -> bool:
         payload = self._signed_payload(catalog)
         signature = catalog.get("signature", "")
         return verify_payload_signature(payload, signature)
+
+    def verify_catalog(self) -> bool:
+        catalog = self._read_catalog()
+        return self._catalog_signature_valid(catalog)
 
     def add_image(self, image_path: Path, label: str | None = None) -> BootImage:
         image_path = Path(image_path)
@@ -115,6 +118,11 @@ class BootCatalog:
         )
 
         catalog = self._read_catalog()
+        if catalog.get("policy", {}).get(
+            "require_signature", True
+        ) and not self._catalog_signature_valid(catalog):
+            raise RuntimeError("Catalog integrity verification failed")
+
         images = catalog.setdefault("images", [])
 
         for existing in images:
@@ -137,7 +145,9 @@ class BootCatalog:
         output_path = Path(output_path)
         catalog = self._read_catalog()
 
-        if self.policy.get("require_signature", True) and not self.verify_catalog():
+        if self.policy.get("require_signature", True) and not self._catalog_signature_valid(
+            catalog
+        ):
             raise RuntimeError("Catalog integrity verification failed")
 
         menu = {

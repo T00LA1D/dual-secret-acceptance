@@ -43,5 +43,5 @@ def verify_payload_signature(
 ) -> bool:
     expected = sign_payload(payload, explicit_secret=explicit_secret)
     if not expected:
-        return signature == ""
+        return False
     return hmac.compare_digest(expected, signature)

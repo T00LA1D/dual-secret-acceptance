@@ -39,6 +39,9 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(menu["images"][0]["title"], "Ubuntu")
 
     def test_duplicate_label_rejected(self) -> None:
+        os.environ["AEGISBOOT_MANIFEST_SECRET"] = "test-secret"
+        self.addCleanup(lambda: os.environ.pop("AEGISBOOT_MANIFEST_SECRET", None))
+
         catalog = BootCatalog(self.state)
         catalog.init_state()
         catalog.add_image(self.image, label="X")
@@ -50,6 +53,9 @@ class CatalogTests(unittest.TestCase):
             catalog.add_image(another, label="X")
 
     def test_bad_extension_rejected(self) -> None:
+        os.environ["AEGISBOOT_MANIFEST_SECRET"] = "test-secret"
+        self.addCleanup(lambda: os.environ.pop("AEGISBOOT_MANIFEST_SECRET", None))
+
         catalog = BootCatalog(self.state)
         catalog.init_state()
 
@@ -58,6 +64,31 @@ class CatalogTests(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             catalog.add_image(bad)
+
+    def test_verify_fails_without_signing_secret(self) -> None:
+        catalog = BootCatalog(self.state)
+        catalog.init_state()
+        self.assertFalse(catalog.verify_catalog())
+
+    def test_add_rejects_tampered_catalog_before_resigning(self) -> None:
+        os.environ["AEGISBOOT_MANIFEST_SECRET"] = "test-secret"
+        self.addCleanup(lambda: os.environ.pop("AEGISBOOT_MANIFEST_SECRET", None))
+
+        catalog = BootCatalog(self.state)
+        catalog.init_state()
+        catalog.add_image(self.image, label="Ubuntu")
+
+        catalog_data = json.loads(catalog.state_file.read_text(encoding="utf-8"))
+        catalog_data["images"][0]["label"] = "Backdoored"
+        catalog.state_file.write_text(
+            json.dumps(catalog_data, indent=2), encoding="utf-8"
+        )
+
+        another = self.root / "rescue.img"
+        another.write_bytes(b"different")
+
+        with self.assertRaises(RuntimeError):
+            catalog.add_image(another, label="Rescue")
 
 
 if __name__ == "__main__":
